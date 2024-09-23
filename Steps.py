@@ -146,10 +146,10 @@ if not filtered_df.empty:
     total_steps_2023 = df_2023['steps'].sum()
     total_steps_2024 = df_2024['steps'].sum()
     distance = filtered_df["distance"].sum()
-    total_steps_per_member = filtered_df.groupby('_member_id')['steps'].sum()
+    total_steps_per_member = filtered_df.groupby('member_account_id')['steps'].sum()
     average_steps_per_member = total_steps_per_member.mean()
     # Count unique members
-    unique_members = filtered_df['_member_id'].nunique()
+    unique_members = filtered_df['member_account_id'].nunique()
 
     scaled_steps_2024 = total_steps_2024/scaling_factor
     scaled_distance = distance/scaling_factor
@@ -204,7 +204,7 @@ if not filtered_df.empty:
     display_metric(col2, "Total Step Count 2024", f"{scaled_steps_2024:.0f}M")
     display_metric(col3, "Total Unique Members", unique_members)
     display_metric(col4, "Total Distance Covered", f"{scaled_distance:.0f}M")
-    display_metric(col5, "Average steps per Member", average_steps_per_member)
+    display_metric(col5, "Average steps per Member", f"{average_steps_per_member:.1f}")
 
 
 
@@ -258,8 +258,11 @@ if not filtered_df.empty:
         """, unsafe_allow_html=True)
     
 
-   # Group by year and sum the steps
-    yearly_steps_august = filtered_df.groupby('Year')['steps'].sum().reset_index()
+    # Group by year and calculate the average steps
+    yearly_avg_steps_august = filtered_df.groupby('Year')['steps'].mean().reset_index()
+
+    # Format the average steps to 2 decimal places
+    yearly_avg_steps_august['formatted_steps'] = yearly_avg_steps_august['steps'].apply(lambda x: f"{x:.2f}")
 
     # Define custom colors
     custom_colors = ["#006E7F", "#e66c37", "#B4B4B8"]
@@ -269,28 +272,28 @@ if not filtered_df.empty:
 
     with cols1:
         # Create the bar chart
-        fig_yearly_steps_august = go.Figure()
+        fig_yearly_avg_steps_august = go.Figure()
 
-        fig_yearly_steps_august.add_trace(go.Bar(
-            x=yearly_steps_august['Year'],
-            y=yearly_steps_august['steps'],
-            text=yearly_steps_august['steps'],
+        fig_yearly_avg_steps_august.add_trace(go.Bar(
+            x=yearly_avg_steps_august['Year'],
+            y=yearly_avg_steps_august['steps'],
+            text=yearly_avg_steps_august['formatted_steps'],
             textposition='inside',
             textfont=dict(color='white'),
             hoverinfo='x+y',
             marker_color=custom_colors[0]  # Use the first custom color
         ))
 
-        fig_yearly_steps_august.update_layout(
+        fig_yearly_avg_steps_august.update_layout(
             xaxis_title="Year",
-            yaxis_title="Total Steps",
+            yaxis_title="Average Steps",
             font=dict(color='Black'),
             xaxis=dict(
                 title_font=dict(size=14), 
                 tickfont=dict(size=12),
                 tickmode='array',
-                tickvals=yearly_steps_august['Year'].tolist(),  # Set tick values based on unique years in the data
-                ticktext=yearly_steps_august['Year'].astype(str).tolist()  # Set tick labels as strings of the years
+                tickvals=yearly_avg_steps_august['Year'].tolist(),  # Set tick values based on unique years in the data
+                ticktext=yearly_avg_steps_august['Year'].astype(str).tolist()  # Set tick labels as strings of the years
             ),
             yaxis=dict(title_font=dict(size=14), tickfont=dict(size=12)),
             margin=dict(l=0, r=0, t=30, b=50),
@@ -298,11 +301,12 @@ if not filtered_df.empty:
         )
 
         # Display the chart in Streamlit
-        st.markdown('<h2 class="custom-subheader">Yearly Steps Distribution in August</h2>', unsafe_allow_html=True)
-        st.plotly_chart(fig_yearly_steps_august, use_container_width=True)
+        st.markdown('<h2 class="custom-subheader">Yearly Average Steps in August</h2>', unsafe_allow_html=True)
+        st.plotly_chart(fig_yearly_avg_steps_august, use_container_width=True)
+
 
         # Sum the steps for each hour
-    hourly_steps = filtered_df.groupby('HourOfDay')['steps'].sum().sort_index()
+    hourly_steps = filtered_df.groupby('HourOfDay')['steps'].mean().sort_index()
     with cols2:
         # Create the bar chart
         fig = go.Figure()
@@ -318,7 +322,7 @@ if not filtered_df.empty:
         # Update layout
         fig.update_layout(
             xaxis_title='Hour of the Day',
-            yaxis_title='Number of Steps',
+            yaxis_title='Average Number of Steps',
             legend_title='Legend',
             height=600,
             margin=dict(l=0, r=0, t=30, b=0)
@@ -330,7 +334,7 @@ if not filtered_df.empty:
             
     
     # Calculate the total and average number of steps per member
-    total_steps_per_member = filtered_df.groupby('_member_id')['steps'].sum()
+    total_steps_per_member = filtered_df.groupby('member_account_id')['steps'].mean()
     average_steps_per_member = total_steps_per_member.mean()
 
     # Create the bar chart
@@ -346,7 +350,7 @@ if not filtered_df.empty:
 
     # Update layout
     fig.update_layout(
-        xaxis_title='Member ID',
+        xaxis_title='Member Number',
         yaxis_title='Total Number of Steps',
         legend_title='Legend',
         height=600,
@@ -359,7 +363,7 @@ if not filtered_df.empty:
 
 
     # Calculate the total number of steps for each unique distance
-    total_steps_per_distance = df.groupby('distance')['steps'].sum().reset_index()
+    total_steps_per_distance = df.groupby('distance')['steps'].mean().reset_index()
 
     # Sort the DataFrame by distance to ensure the line chart shows a clear trend
     total_steps_per_distance = total_steps_per_distance.sort_values(by='distance')
