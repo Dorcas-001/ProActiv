@@ -362,35 +362,34 @@ if not filtered_df.empty:
     st.plotly_chart(fig, use_container_width=True)
 
 
-    # Calculate the total number of steps for each unique distance
-    total_steps_per_distance = df.groupby('distance')['steps'].mean().reset_index()
+    # Calculate the average number of steps for each unique distance
+    average_steps_per_distance = df.groupby('distance')['steps'].mean().reset_index()
 
-    # Sort the DataFrame by distance to ensure the line chart shows a clear trend
-    total_steps_per_distance = total_steps_per_distance.sort_values(by='distance')
+    # Sort the DataFrame by distance to ensure the bar chart shows a clear trend
+    average_steps_per_distance = average_steps_per_distance.sort_values(by='distance')
 
-    # Create the line chart
+    # Create the bar chart
     fig = go.Figure()
 
-    # Add line trace
-    fig.add_trace(go.Scatter(
-        x=total_steps_per_distance['distance'],
-        y=total_steps_per_distance['steps'],
-        mode='markers',
-        name='Total Steps per Distance',
-        line=dict(color='#009DAE')
+    # Add bar trace
+    fig.add_trace(go.Bar(
+        x=average_steps_per_distance['distance'],
+        y=average_steps_per_distance['steps'],
+        name='Average Steps per Distance',
+        marker_color='#009DAE'
     ))
 
     # Update layout
     fig.update_layout(
         xaxis_title='Distance (m)',
-        yaxis_title='Total Number of Steps',
+        yaxis_title='Average Number of Steps',
         legend_title='Legend',
         height=600,
         margin=dict(l=0, r=0, t=30, b=0)
     )
 
     # Display in Streamlit
-    st.markdown('<h2 class="custom-subheader">Total Steps per Distance</h2>', unsafe_allow_html=True)
+    st.markdown('<h2 class="custom-subheader">Average Steps per Distance</h2>', unsafe_allow_html=True)
     st.plotly_chart(fig, use_container_width=True)
 
 
