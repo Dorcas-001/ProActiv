@@ -57,7 +57,7 @@ st.markdown('''
     </style>
 ''', unsafe_allow_html=True)
 # Your Streamlit app content
-st.markdown('<h1 class = "main-title">PROACTIV MEMBER DISTRIBUTION DASHBOARD</h1>', unsafe_allow_html=True)
+st.markdown('<h1 class = "main-title">MEMBER DISTRIBUTION View</h1>', unsafe_allow_html=True)
 
 
 # Define colors to match the image
@@ -66,7 +66,7 @@ color_palette = ["#006E7F", "#e66c37","#461b09","#f8a785", "#CC3636",  '#FFC288'
 @st.cache_data
 def load_data():
     # Replace this with your actual data loading method
-    df = df= pd.read_csv('proactiv_members.csv',encoding="ISO-8859-1")
+    df = df= pd.read_csv('proactiv_members.csv')
     df['Date of Birth'] = pd.to_datetime(df['Date of Birth'])
     return df
 df = load_data()

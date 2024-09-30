@@ -46,7 +46,7 @@ st.markdown('''
         .main-title {
             color: #E66C37; /* Title color */
             text-align: center; /* Center align the title */
-            font-size: 3rem; /* Title font size */
+            font-size: 2.5rem; /* Title font size */
             font-weight: bold; /* Title font weight */
             margin-bottom: .5rem; /* Space below the title */
             text-shadow: 1px 1px 2px rgba(0, 0, 0, 0.1); /* Subtle text shadow */
@@ -57,7 +57,7 @@ st.markdown('''
     </style>
 ''', unsafe_allow_html=True)
 # Your Streamlit app content
-st.markdown('<h1 class = "main-title">Mental Health Assessments and Screening Dashboard</h1>', unsafe_allow_html=True)
+st.markdown('<h1 class = "main-title">Mental Health Assessments View</h1>', unsafe_allow_html=True)
 
 
 # Define colors to match the image
@@ -164,12 +164,12 @@ if not filtered_data.empty:
         }
         .metric-title {
             color: #E66C37; /* Change this color to your preferred title color */
-            font-size: 1.2em;
+            font-size: 0.9em;
             margin-bottom: 10px;
         }
         .metric-value {
             color: #009DAE;
-            font-size: 2em;
+            font-size: 1.2em;
         }
         </style>
         """, unsafe_allow_html=True)
@@ -181,10 +181,23 @@ if not filtered_data.empty:
                 <div class="metric-value">{value}</div>
             </div>
             """, unsafe_allow_html=True)
+    # Display Metrics Side by Side
+    col1, col2, col3 = st.columns(3)
     # Metric: Number of Assessments
+    active_mem = 3450
     num_assessments = len(filtered_data)
-    col1,col2=st.columns(2)
-    display_metric(col1, "Total Assessments", num_assessments)
+    unique_mem = filtered_data["Member ID"].nunique()
+    percent_unique = (unique_mem/active_mem) * 100
+
+
+    display_metric(col1,"Total Assessments", num_assessments)
+    display_metric(col2,"Total unique members", unique_mem)
+    display_metric(col3,"Percentage of all assessed members", f"{percent_unique:,.2f}%")
+
+
+
+
+
     # Bar chart for Assessment Count by Assessment Type
     assessment_count = filtered_data['Assessment Type'].value_counts().reset_index()
     assessment_count.columns = ['Assessment Type', 'Count']

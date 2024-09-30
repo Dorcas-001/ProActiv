@@ -145,12 +145,12 @@ if not df2.empty:
         }
         .metric-title {
             color: #E66C37; /* Change this color to your preferred title color */
-            font-size: 1.2em;
+            font-size: 1em;
             margin-bottom: 10px;
         }
         .metric-value {
             color: #009DAE;
-            font-size: 2em;
+            font-size: 1.5em;
         }
         </style>
         """, unsafe_allow_html=True)
@@ -162,9 +162,22 @@ if not df2.empty:
                 <div class="metric-value">{value}</div>
             </div>
             """, unsafe_allow_html=True)
+
+    # Display Metrics Side by Side
+    col1, col2, col3 = st.columns(3)
     # Metric: Number of Assessments
     total_screened_persons = df2['Screened Persons'].sum()
-    display_metric(col1, "Total Screenings", total_screened_persons)
+    active_mem = 3450
+    pro_mem = 80
+    num_assessments = len(filtered_data)
+    percent_unique = (total_screened_persons/active_mem) * 100
+    percet_pro = (total_screened_persons/pro_mem)*100
+
+    display_metric(col1,"Total Assessments", total_screened_persons)
+    display_metric(col2,"Percentage of ProActiv assessed members", f"{percet_pro:,.2f}%")
+    display_metric(col3,"Percentage of all assessed members", f"{percent_unique:,.1f}%")
+
+
 
     # Group the data by Year and Month, summing the number of screens
     df_grouped = df2.groupby(['Year', 'Month'], as_index=False)['Screened Persons'].sum()

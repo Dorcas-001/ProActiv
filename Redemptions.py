@@ -66,6 +66,7 @@ def load_data():
    data['Year'] = data['Redeemed On'].dt.year
    return data
 data = load_data()
+
 # Get minimum and maximum dates for the date input
 startDate = data["Redeemed On"].min()
 endDate = data["Redeemed On"].max()
@@ -163,12 +164,12 @@ if not filtered_data.empty:
         }
         .metric-title {
             color: #E66C37; /* Change this color to your preferred title color */
-            font-size: 1.2em;
+            font-size: 0.8em;
             margin-bottom: 10px;
         }
         .metric-value {
             color: #009DAE;
-            font-size: 2em;
+            font-size: 1.5em;
         }
         </style>
         """, unsafe_allow_html=True)
@@ -179,11 +180,23 @@ if not filtered_data.empty:
                 <div class="metric-value">{value}</div>
             </div>
             """, unsafe_allow_html=True)
+        
+    active_mem = 3450
+    pro_mem = 80
+    num_assessments = len(filtered_data)
+    unique_mem = filtered_data["Member Number"].nunique()
+    percent_unique = (unique_mem/active_mem) * 100
+    percet_pro = (unique_mem/pro_mem)*100
     # Display Metrics Side by Side
     col1, col2, col3 = st.columns(3)
     display_metric(col1,"Total Cost", f"RWF {total_cost:,.0f}")
     display_metric(col2,"Total Number of Redeems", total_redeems)
     display_metric(col3,f"Average Cost({filter_description.strip()})", f"RWF {average_cost:,.0f}")
+    display_metric(col1,"Total Unique Redeems", unique_mem)
+    display_metric(col2,"Percentage Redeemed by ProActiv members", f"{percet_pro:,.1f}%")
+    display_metric(col3,"Percentage Redeemed by all members", f"{percent_unique:,.1f}%")
+
+
     # Create Area Time Series Chart
     df_time_series = data.groupby(data['Redeemed On'].dt.to_period('M')).agg({'Item Cost': 'sum', 'Item Redeemed': 'count'}).reset_index()
     # Load data (replace 'path_to_your_file.xlsx' with your file path)

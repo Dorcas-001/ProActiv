@@ -56,7 +56,7 @@ st.markdown('''
     </style>
 ''', unsafe_allow_html=True)
 # Your Streamlit app content
-st.markdown('<h1 class = "main-title">Step Count Dashboard</h1>', unsafe_allow_html=True)
+st.markdown('<h1 class = "main-title">Step Count View</h1>', unsafe_allow_html=True)
 # Loading the data
 color_palette = ["#006E7F", "#e66c37","#461b09","#f8a785", "#CC3636",  '#FFC288', '#EFB08C', '#FAD3CF']
 
@@ -139,6 +139,7 @@ if not filter_description:
 if not filtered_df.empty:
      # Calculate metrics
     scaling_factor = 1_000_000
+    active_mem = 3850
     # Filter for the years 2023 and 2024
     df_2023 = filtered_df[filtered_df['Year'] == 2023]
     df_2024 = filtered_df[filtered_df['Year'] == 2024]
@@ -147,16 +148,16 @@ if not filtered_df.empty:
     total_steps_2024 = df_2024['steps'].sum()
     distance = filtered_df["distance"].sum()
     total_steps_per_member = filtered_df.groupby('member_account_id')['steps'].sum()
-    average_steps_per_member = total_steps_per_member.mean()
+    average_steps_per_member = (total_steps_per_member.mean())/scaling_factor
     # Count unique members
     unique_members = filtered_df['member_account_id'].nunique()
-
+    percent_unique  =  (unique_members/active_mem) *100
     scaled_steps_2024 = total_steps_2024/scaling_factor
     scaled_distance = distance/scaling_factor
 
 
     # Create 4-column layout for metric cards
-    col1, col2, col3, col4, col5 = st.columns(5)
+    col1, col2, col3 = st.columns(3)
 
     # Define CSS for the styled boxes
     st.markdown("""
@@ -203,8 +204,10 @@ if not filtered_df.empty:
     display_metric(col1, "Total Step Count 2023", total_steps_2023)
     display_metric(col2, "Total Step Count 2024", f"{scaled_steps_2024:.0f}M")
     display_metric(col3, "Total Unique Members", unique_members)
-    display_metric(col4, "Total Distance Covered", f"{scaled_distance:.0f}M")
-    display_metric(col5, "Average steps per Member", f"{average_steps_per_member:.1f}")
+    display_metric(col1, "Total Distance Covered", f"{scaled_distance:.0f}M")
+    display_metric(col2, "Average steps per Member", f"{average_steps_per_member:.1f}")
+    display_metric(col3, "Percentage of steps by members", f"{percent_unique:.1f}%")
+
 
 
 
@@ -301,13 +304,88 @@ if not filtered_df.empty:
         )
 
         # Display the chart in Streamlit
-        st.markdown('<h2 class="custom-subheader">Yearly Average Steps in August</h2>', unsafe_allow_html=True)
+        st.markdown('<h2 class="custom-subheader">Daily Average Steps in August</h2>', unsafe_allow_html=True)
         st.plotly_chart(fig_yearly_avg_steps_august, use_container_width=True)
 
 
-        # Sum the steps for each hour
-    hourly_steps = filtered_df.groupby('HourOfDay')['steps'].mean().sort_index()
+# Group by year and calculate the average steps
+    yearly_avg_steps_august = filtered_df.groupby('Year')['distance'].mean().reset_index()
+
+    # Format the average steps to 2 decimal places
+    yearly_avg_steps_august['formatted_steps'] = yearly_avg_steps_august['distance'].apply(lambda x: f"{x:.2f}")
+
+    # Define custom colors
+    custom_colors = ["#006E7F", "#e66c37", "#B4B4B8"]
+
     with cols2:
+        # Create the bar chart
+        fig_yearly_avg_steps_august = go.Figure()
+
+        fig_yearly_avg_steps_august.add_trace(go.Bar(
+            x=yearly_avg_steps_august['Year'],
+            y=yearly_avg_steps_august['distance'],
+            text=yearly_avg_steps_august['formatted_steps'],
+            textposition='inside',
+            textfont=dict(color='white'),
+            hoverinfo='x+y',
+            marker_color=custom_colors[0]  # Use the first custom color
+        ))
+
+        fig_yearly_avg_steps_august.update_layout(
+            xaxis_title="Year",
+            yaxis_title="Average Distance",
+            font=dict(color='Black'),
+            xaxis=dict(
+                title_font=dict(size=14), 
+                tickfont=dict(size=12),
+                tickmode='array',
+                tickvals=yearly_avg_steps_august['Year'].tolist(),  # Set tick values based on unique years in the data
+                ticktext=yearly_avg_steps_august['Year'].astype(str).tolist()  # Set tick labels as strings of the years
+            ),
+            yaxis=dict(title_font=dict(size=14), tickfont=dict(size=12)),
+            margin=dict(l=0, r=0, t=30, b=50),
+            height=450
+        )
+
+        # Display the chart in Streamlit
+        st.markdown('<h2 class="custom-subheader">Daily Average Disitance Covered in August</h2>', unsafe_allow_html=True)
+        st.plotly_chart(fig_yearly_avg_steps_august, use_container_width=True)
+
+
+            
+    cul1, cul2 = st.columns(2)
+    # Calculate the total and average number of steps per member
+    total_steps_per_member = filtered_df.groupby('member_account_id')['steps'].mean()
+    average_steps_per_member = total_steps_per_member.mean()
+
+    with cul2:
+        # Create the bar chart
+        fig = go.Figure()
+
+        # Add bar trace
+        fig.add_trace(go.Bar(
+            x=total_steps_per_member.index,
+            y=total_steps_per_member.values,
+            name='Total Steps per Member',
+            marker_color='#009DAE'
+        ))
+
+        # Update layout
+        fig.update_layout(
+            xaxis_title='Member Number',
+            yaxis_title='Total Number of Steps',
+            legend_title='Legend',
+            height=600,
+            margin=dict(l=0, r=0, t=30, b=0)
+        )
+
+        # Display in Streamlit
+        st.markdown('<h2 class="custom-subheader">Total Steps per Member</h2>', unsafe_allow_html=True)
+        st.plotly_chart(fig, use_container_width=True)
+
+# Sum the steps for each hour
+    hourly_steps = filtered_df.groupby('HourOfDay')['steps'].mean().sort_index()
+    with cul1:
         # Create the bar chart
         fig = go.Figure()
 
@@ -331,68 +409,6 @@ if not filtered_df.empty:
         # Display in Streamlit
         st.markdown('<h2 class="custom-subheader">Hourly Steps in August</h2>', unsafe_allow_html=True)
         st.plotly_chart(fig, use_container_width=True)
-            
-    
-    # Calculate the total and average number of steps per member
-    total_steps_per_member = filtered_df.groupby('member_account_id')['steps'].mean()
-    average_steps_per_member = total_steps_per_member.mean()
-
-    # Create the bar chart
-    fig = go.Figure()
-
-    # Add bar trace
-    fig.add_trace(go.Bar(
-        x=total_steps_per_member.index,
-        y=total_steps_per_member.values,
-        name='Total Steps per Member',
-        marker_color='#009DAE'
-    ))
-
-    # Update layout
-    fig.update_layout(
-        xaxis_title='Member Number',
-        yaxis_title='Total Number of Steps',
-        legend_title='Legend',
-        height=600,
-        margin=dict(l=0, r=0, t=30, b=0)
-    )
-
-    # Display in Streamlit
-    st.markdown('<h2 class="custom-subheader">Total Steps per Member</h2>', unsafe_allow_html=True)
-    st.plotly_chart(fig, use_container_width=True)
-
-
-    # Calculate the total number of steps for each unique distance
-    total_steps_per_distance = df.groupby('distance')['steps'].mean().reset_index()
-
-    # Sort the DataFrame by distance to ensure the line chart shows a clear trend
-    total_steps_per_distance = total_steps_per_distance.sort_values(by='distance')
-
-    # Create the line chart
-    fig = go.Figure()
-
-    # Add line trace
-    fig.add_trace(go.Scatter(
-        x=total_steps_per_distance['distance'],
-        y=total_steps_per_distance['steps'],
-        mode='markers',
-        name='Total Steps per Distance',
-        line=dict(color='#009DAE')
-    ))
-
-    # Update layout
-    fig.update_layout(
-        xaxis_title='Distance (m)',
-        yaxis_title='Total Number of Steps',
-        legend_title='Legend',
-        height=600,
-        margin=dict(l=0, r=0, t=30, b=0)
-    )
-
-    # Display in Streamlit
-    st.markdown('<h2 class="custom-subheader">Total Steps per Distance</h2>', unsafe_allow_html=True)
-    st.plotly_chart(fig, use_container_width=True)
-
 
     # Filter the DataFrame for August 2024
     august_2024_df = df[(df['Year'] == 2024)]
