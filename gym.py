@@ -172,7 +172,7 @@ if not filtered_data.empty:
         }
         .metric-title {
             color: #E66C37; /* Change this color to your preferred title color */
-            font-size: 0.8em;
+            font-size: 0.9em;
             margin-bottom: 10px;
         }
         .metric-value {
