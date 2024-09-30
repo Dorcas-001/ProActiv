@@ -174,7 +174,7 @@ if not df2.empty:
     percet_pro = (total_screened_persons/pro_mem)*100
 
     display_metric(col1,"Total Screened", total_screened_persons)
-    display_metric(col2,"Percentage of all assessed members", f"{percent_unique:,.1f}%")
+    display_metric(col2,"Percentage of all Screened members", f"{percent_unique:,.1f}%")
 
 
 
