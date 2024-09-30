@@ -181,7 +181,7 @@ if not filtered_data.empty:
             </div>
             """, unsafe_allow_html=True)
         
-    active_mem = 3450
+    active_mem = 3768
     pro_mem = 80
     num_assessments = len(filtered_data)
     unique_mem = filtered_data["Member Number"].nunique()

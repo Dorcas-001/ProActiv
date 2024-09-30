@@ -139,7 +139,7 @@ if not filter_description:
 if not filtered_df.empty:
      # Calculate metrics
     scaling_factor = 1_000_000
-    active_mem = 3850
+    active_mem = 3768
     # Filter for the years 2023 and 2024
     df_2023 = filtered_df[filtered_df['Year'] == 2023]
     df_2024 = filtered_df[filtered_df['Year'] == 2024]

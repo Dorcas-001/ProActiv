@@ -184,7 +184,7 @@ if not filtered_data.empty:
     # Display Metrics Side by Side
     col1, col2, col3 = st.columns(3)
     # Metric: Number of Assessments
-    active_mem = 3450
+    active_mem = 3768
     num_assessments = len(filtered_data)
     unique_mem = filtered_data["Member ID"].nunique()
     percent_unique = (unique_mem/active_mem) * 100
