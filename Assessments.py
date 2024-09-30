@@ -193,10 +193,7 @@ if not filtered_data.empty:
     display_metric(col1,"Total Assessments", num_assessments)
     display_metric(col2,"Total unique members", unique_mem)
     display_metric(col3,"Percentage of all assessed members", f"{percent_unique:,.2f}%")
-
-
-
-
+    
 
     # Bar chart for Assessment Count by Assessment Type
     assessment_count = filtered_data['Assessment Type'].value_counts().reset_index()

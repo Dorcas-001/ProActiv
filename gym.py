@@ -56,20 +56,19 @@ st.markdown('''
     </style>
 ''', unsafe_allow_html=True)
 # Your Streamlit app content
-st.markdown('<h1 class = "main-title">Reward Redemption Dashboard</h1>', unsafe_allow_html=True)
+st.markdown('<h1 class = "main-title">GYM BENEFITS VIEW</h1>', unsafe_allow_html=True)
 # Loading the data
 color_palette = ["#006E7F", "#e66c37","#461b09","#f8a785", "#CC3636",  '#FFC288', '#EFB08C', '#FAD3CF']
 
 @st.cache_data
 def load_data():
-    data = pd.read_excel('Active-Lives.xlsx')
+    data = pd.read_excel('Active-Live.xlsx')
     data['Start Date'] = pd.to_datetime(data['Start Date'])
     data['Year'] = data['Start Date'].dt.year
     data['Month'] = data['Start Date'].dt.strftime('%b')
     return data
 
 data = load_data()
-
 # Get minimum and maximum dates for the date input
 startDate = data["Start Date"].min()
 endDate = data["Start Date"].max()
@@ -145,7 +144,6 @@ if not filter_description:
     filter_description = "All Data"
 
 # Calculate Metrics
-total_member = len(filtered_data)
 active_mem = 7388
 unique_mem = filtered_data["Member Number"].nunique()
 percent_unique = (unique_mem/active_mem) * 100
@@ -194,7 +192,7 @@ if not filtered_data.empty:
 
     # Display Metrics Side by Side
     col1, col2, col3 = st.columns(3)
-    display_metric(col1,"Total Members", total_member)
+    display_metric(col1,"Total Members", active_mem)
     display_metric(col2,"Total Unique Gym Members", unique_mem)
     display_metric(col3,"Percentage Gym members", f"{percent_unique:,.1f}%")
 
