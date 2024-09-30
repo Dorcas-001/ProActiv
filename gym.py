@@ -62,7 +62,7 @@ color_palette = ["#006E7F", "#e66c37","#461b09","#f8a785", "#CC3636",  '#FFC288'
 
 @st.cache_data
 def load_data():
-    data = pd.read_excel('Active-Live.xlsx')
+    data = pd.read_excel('Active_gym_members.xlsx')
     data['Start Date'] = pd.to_datetime(data['Start Date'])
     data['Year'] = data['Start Date'].dt.year
     data['Month'] = data['Start Date'].dt.strftime('%b')
