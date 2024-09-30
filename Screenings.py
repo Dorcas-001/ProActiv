@@ -164,7 +164,7 @@ if not df2.empty:
             """, unsafe_allow_html=True)
 
     # Display Metrics Side by Side
-    col1, col2, col3 = st.columns(3)
+    col1, col2 = st.columns(2)
     # Metric: Number of Assessments
     total_screened_persons = df2['Screened Persons'].sum()
     active_mem = 3450
@@ -173,9 +173,8 @@ if not df2.empty:
     percent_unique = (total_screened_persons/active_mem) * 100
     percet_pro = (total_screened_persons/pro_mem)*100
 
-    display_metric(col1,"Total Assessments", total_screened_persons)
-    display_metric(col2,"Percentage of ProActiv assessed members", f"{percet_pro:,.2f}%")
-    display_metric(col3,"Percentage of all assessed members", f"{percent_unique:,.1f}%")
+    display_metric(col1,"Total Screened", total_screened_persons)
+    display_metric(col2,"Percentage of all assessed members", f"{percent_unique:,.1f}%")
 
 
 
