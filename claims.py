@@ -125,7 +125,10 @@ if specialization:
     filtered_data = filtered_data[filtered_data['attending_doctor_specialisation'].isin(specialization)]
 
 # Calculate total claims, approved claims, rejected claims, and pending claims
+active_mem = 80
 total_claims = len(filtered_data)
+unique_mem = filtered_data["_visit_id"].nunique()
+percent_unique = (unique_mem/active_mem) * 100
 approved_claims = filtered_data[filtered_data['status'] == 'Approved'].shape[0]
 rejected_claims = filtered_data[filtered_data['status'] == 'Rejected'].shape[0]
 pending_claims = filtered_data[filtered_data['status'] == 'Pending'].shape[0]
@@ -187,7 +190,9 @@ if not filtered_data.empty:
 
     # Show total claims, approved claims, rejected claims, and pending claims
     display_metric(col1, "Total Claims", total_claims)
-    display_metric(col3, "Approved Claims", approved_claims)
+    display_metric(col2, "Unique Claims", unique_mem)
+    display_metric(col3,"Percentage claimed", f"{percent_unique:,.1f}%")
+    display_metric(col1, "Approved Claims", approved_claims)
     display_metric(col2, "Total Claim Amount", format_claim_amount(total_claim_amount))  # Use formatted total claim amount
 
 

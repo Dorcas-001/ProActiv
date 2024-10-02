@@ -190,11 +190,11 @@ if not filtered_data.empty:
     # Display Metrics Side by Side
     col1, col2, col3 = st.columns(3)
     display_metric(col1,"Total Cost", f"RWF {total_cost:,.0f}")
-    display_metric(col2,"Total Number of Redeems", total_redeems)
+    display_metric(col2,"Total Number of Redemptions", total_redeems)
     display_metric(col3,f"Average Cost({filter_description.strip()})", f"RWF {average_cost:,.0f}")
-    display_metric(col1,"Total Unique Redeems", unique_mem)
-    display_metric(col2,"Percentage Redeemed by ProActiv members", f"{percet_pro:,.1f}%")
-    display_metric(col3,"Percentage Redeemed by all members", f"{percent_unique:,.1f}%")
+    display_metric(col1,"Total Unique Redemptions", unique_mem)
+    display_metric(col2,"Percentage Redemptions by ProActiv members", f"{percet_pro:,.1f}%")
+    display_metric(col3,"Percentage Redemptions by all members", f"{percent_unique:,.1f}%")
 
 
     # Create Area Time Series Chart
@@ -281,7 +281,7 @@ if not filtered_data.empty:
     fig_hours = px.bar(hour_counts, y='Hour', x='Count', orientation='h')
     fig_hours.update_layout(
                     yaxis_title="Hour",
-                    xaxis_title="Number of Redeems",
+                    xaxis_title="Number of Redemptions",
                     font=dict(color='black'),
                 )
     fig_hours.update_traces(marker_color=teal_color)
@@ -289,7 +289,7 @@ if not filtered_data.empty:
     fig_months = px.bar(month_counts, x='Month', y='Count')
     fig_months.update_layout(
                     xaxis_title="Month",
-                    yaxis_title="Number of Redeems",
+                    yaxis_title="Number of Redemptions",
                 )
     fig_months.update_traces(marker_color=teal_color)
     fig_months.update_layout(height=350, margin=dict(l=10, r=10, t=30, b=10))

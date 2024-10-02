@@ -143,10 +143,18 @@ if selected_merchants:
 if not filter_description:
     filter_description = "All Data"
 
+df1 = pd.read_excel("ProActiv Written Premium.xlsx")
+
 # Calculate Metrics
-active_mem = 7388
+active_mem = 4652
 unique_mem = filtered_data["Member Number"].nunique()
-percent_unique = (unique_mem/active_mem) * 100
+unique_clients = df1.groupby('Client Name')['Total lives'].sum().reset_index()
+
+# Sum the Total lives for unique client names
+total_lives_sum = unique_clients['Total lives'].sum()
+
+total_unique = unique_mem + total_lives_sum
+percent_unique = (total_unique/active_mem) * 100
 
 if not filtered_data.empty:
     # Top metrics
@@ -193,7 +201,7 @@ if not filtered_data.empty:
     # Display Metrics Side by Side
     col1, col2, col3 = st.columns(3)
     display_metric(col1,"Total Members", active_mem)
-    display_metric(col2,"Total Unique Gym Members", unique_mem)
+    display_metric(col2,"Total Unique Gym Members", total_unique)
     display_metric(col3,"Percentage Gym members", f"{percent_unique:,.1f}%")
 
 

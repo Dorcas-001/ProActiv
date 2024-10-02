@@ -167,7 +167,7 @@ if not df2.empty:
     col1, col2 = st.columns(2)
     # Metric: Number of Assessments
     total_screened_persons = df2['Screened Persons'].sum()
-    active_mem = 3768
+    active_mem = 3984
     pro_mem = 80
     num_assessments = len(filtered_data)
     percent_unique = (total_screened_persons/active_mem) * 100

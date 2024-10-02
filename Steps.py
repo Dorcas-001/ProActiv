@@ -62,6 +62,7 @@ color_palette = ["#006E7F", "#e66c37","#461b09","#f8a785", "#CC3636",  '#FFC288'
 
 
 df = pd.read_excel("steps_data.xlsx")
+df = df.drop_duplicates()
 
 # Sidebar styling and logo
 st.markdown("""
@@ -139,6 +140,7 @@ if not filter_description:
 if not filtered_df.empty:
      # Calculate metrics
     scaling_factor = 1_000_000
+    scale = 1000
     active_mem = 3768
     # Filter for the years 2023 and 2024
     df_2023 = filtered_df[filtered_df['Year'] == 2023]
@@ -147,10 +149,12 @@ if not filtered_df.empty:
     total_steps_2023 = df_2023['steps'].sum()
     total_steps_2024 = df_2024['steps'].sum()
     distance = filtered_df["distance"].sum()
-    total_steps_per_member = filtered_df.groupby('member_account_id')['steps'].sum()
-    average_steps_per_member = (total_steps_per_member.mean())/scaling_factor
-    # Count unique members
     unique_members = filtered_df['member_account_id'].nunique()
+
+    total_steps_per_member = filtered_df.groupby('member_account_id')['steps'].sum().reset_index()
+    # Calculate the average total steps per member
+    average_total_steps_per_member = (total_steps_per_member['steps'].mean())/scale
+    # Count unique members
     percent_unique  =  (unique_members/active_mem) *100
     scaled_steps_2024 = total_steps_2024/scaling_factor
     scaled_distance = distance/scaling_factor
@@ -205,7 +209,7 @@ if not filtered_df.empty:
     display_metric(col2, "Total Step Count 2024", f"{scaled_steps_2024:.0f}M")
     display_metric(col3, "Total Unique Members", unique_members)
     display_metric(col1, "Total Distance Covered", f"{scaled_distance:.0f}M")
-    display_metric(col2, "Average steps per Member", f"{average_steps_per_member:.1f}")
+    display_metric(col2, "Average steps per Member", f"{average_total_steps_per_member:.1f}K")
     display_metric(col3, "Percentage of steps by members", f"{percent_unique:.1f}%")
 
 
@@ -259,13 +263,12 @@ if not filtered_df.empty:
                 
         </style>
         """, unsafe_allow_html=True)
-    
-
-    # Group by year and calculate the average steps
-    yearly_avg_steps_august = filtered_df.groupby('Year')['steps'].mean().reset_index()
+ 
+    # Group by year and calculate the average daily steps in August
+    yearly_avg_daily_steps_august = filtered_df.groupby('Year')['steps'].mean().reset_index()
 
     # Format the average steps to 2 decimal places
-    yearly_avg_steps_august['formatted_steps'] = yearly_avg_steps_august['steps'].apply(lambda x: f"{x:.2f}")
+    yearly_avg_daily_steps_august['formatted_steps'] = yearly_avg_daily_steps_august['steps'].apply(lambda x: f"{x:.2f}")
 
     # Define custom colors
     custom_colors = ["#006E7F", "#e66c37", "#B4B4B8"]
@@ -278,9 +281,9 @@ if not filtered_df.empty:
         fig_yearly_avg_steps_august = go.Figure()
 
         fig_yearly_avg_steps_august.add_trace(go.Bar(
-            x=yearly_avg_steps_august['Year'],
-            y=yearly_avg_steps_august['steps'],
-            text=yearly_avg_steps_august['formatted_steps'],
+            x=yearly_avg_daily_steps_august['Year'],
+            y=yearly_avg_daily_steps_august['steps'],
+            text=yearly_avg_daily_steps_august['formatted_steps'],
             textposition='inside',
             textfont=dict(color='white'),
             hoverinfo='x+y',
@@ -289,14 +292,14 @@ if not filtered_df.empty:
 
         fig_yearly_avg_steps_august.update_layout(
             xaxis_title="Year",
-            yaxis_title="Average Steps",
+            yaxis_title="Average Daily Steps in August",
             font=dict(color='Black'),
             xaxis=dict(
                 title_font=dict(size=14), 
                 tickfont=dict(size=12),
                 tickmode='array',
-                tickvals=yearly_avg_steps_august['Year'].tolist(),  # Set tick values based on unique years in the data
-                ticktext=yearly_avg_steps_august['Year'].astype(str).tolist()  # Set tick labels as strings of the years
+                tickvals=yearly_avg_daily_steps_august['Year'].tolist(),  # Set tick values based on unique years in the data
+                ticktext=yearly_avg_daily_steps_august['Year'].astype(str).tolist()  # Set tick labels as strings of the years
             ),
             yaxis=dict(title_font=dict(size=14), tickfont=dict(size=12)),
             margin=dict(l=0, r=0, t=30, b=50),
@@ -438,5 +441,5 @@ if not filtered_df.empty:
     )
 
     # Display in Streamlit
-    st.markdown('<h2 class="custom-subheader">Daily Total Steps in August 202</h2>', unsafe_allow_html=True)
+    st.markdown('<h2 class="custom-subheader">Daily Total Steps in August 2024</h2>', unsafe_allow_html=True)
     st.plotly_chart(fig, use_container_width=True)
