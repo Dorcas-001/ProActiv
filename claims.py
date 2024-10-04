@@ -137,7 +137,8 @@ scale = 1_000_000
 total_claims = len(filtered_data)
 unique_mem = filtered_data["Member Number"].nunique()
 percent_unique = (unique_mem/active_mem) * 100
-approved = (filtered_data["Approved Claim Amount"].sum())/scale
+approved_claim_amount = filtered_data[filtered_data['Claim Status'] == 'Approved']['Approved Claim Amount'].sum() / scale
+
 approved_claims = filtered_data[filtered_data['Claim Status'] == 'Approved'].shape[0]
 rejected_claims = filtered_data[filtered_data['Claim Status'] == 'Rejected'].shape[0]
 pending_claims = filtered_data[filtered_data['Claim Status'] == 'Pending'].shape[0]
@@ -198,7 +199,7 @@ if not filtered_data.empty:
     display_metric(col3,"Percentage claimed", f"{percent_unique:,.1f}%")
     display_metric(col1, "Approved Claims", approved_claims)
     display_metric(col2, "Total Claim Amount", f"RWF {total_claim_amount:.1f} M")
-    display_metric(col3, "Approved Claim Amount", f"RWF {approved:.1f} M")
+    display_metric(col3, "Approved Claim Amount", f"RWF {approved_claim_amount:.1f} M")
 
   # Use formatted total claim amount
 
