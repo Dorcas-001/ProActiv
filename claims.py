@@ -61,11 +61,10 @@ st.markdown('''
 st.markdown('<h1 class="main-title">MENTAL HEALTH CLAIMS DASHBOARD</h1>', unsafe_allow_html=True)
 
 # Load the dataset (replace with your dataset)
-data = pd.read_csv('mental_health_claims.csv')
+data = pd.read_excel('ProActiv.xlsx')
 
 # Convert the date column to datetime if necessary
-data["claim_date"] = pd.to_datetime(data["date_of_diagnosis"])
-data['last_modified_timestamp']=pd.to_datetime(data['last_modified_timestamp'])
+data["claim_date"] = pd.to_datetime(data["Claim Created Date"])
 
 # Get min and max dates for the date input
 startDate = data["claim_date"].min()
@@ -112,34 +111,39 @@ filtered_data = data[(data["claim_date"] >= date1) & (data["claim_date"] <= date
 # Sidebar styling and filters
 st.sidebar.header("Filters")
 
-year = st.sidebar.multiselect("Select Year", options=sorted(filtered_data['claim_date'].dt.year.unique()))
-status = st.sidebar.multiselect("Select Claim Status", options=filtered_data['status'].unique())
-specialization = st.sidebar.multiselect("Select Doctor Specialization", options=filtered_data['attending_doctor_specialisation'].unique())
+year = st.sidebar.multiselect("Select Year", options=sorted(filtered_data['Year'].unique()))
+month = st.sidebar.multiselect("Select Month", options=sorted(filtered_data['Month'].unique()))
+status = st.sidebar.multiselect("Select Claim Status", options=filtered_data['Claim Status'].unique())
+em_group = st.sidebar.multiselect("Select Employer Group", options=filtered_data['Employer Name'].unique())
+provider = st.sidebar.multiselect("Select Service Provider", options=filtered_data['Provider Name'].unique())
+
 
 # Filter data based on user selections
 if year:
-    filtered_data = filtered_data[filtered_data['claim_date'].dt.year.isin(year)]
+    filtered_data = filtered_data[filtered_data['Year'].isin(year)]
+if month:
+    filtered_data = filtered_data[filtered_data['Month'].isin(month)]
 if status:
     filtered_data = filtered_data[filtered_data['status'].isin(status)]
-if specialization:
-    filtered_data = filtered_data[filtered_data['attending_doctor_specialisation'].isin(specialization)]
+if em_group:
+    filtered_data = filtered_data[filtered_data['Employer Name'].isin(em_group)]
+if provider:
+    filtered_data = filtered_data[filtered_data['Provider Name'].isin(provider)]
+
 
 # Calculate total claims, approved claims, rejected claims, and pending claims
 active_mem = 80
+scale = 1_000_000
 total_claims = len(filtered_data)
-unique_mem = filtered_data["_visit_id"].nunique()
+unique_mem = filtered_data["Member Number"].nunique()
 percent_unique = (unique_mem/active_mem) * 100
-approved_claims = filtered_data[filtered_data['status'] == 'Approved'].shape[0]
-rejected_claims = filtered_data[filtered_data['status'] == 'Rejected'].shape[0]
-pending_claims = filtered_data[filtered_data['status'] == 'Pending'].shape[0]
+approved = (filtered_data["Approved Claim Amount"].sum())/scale
+approved_claims = filtered_data[filtered_data['Claim Status'] == 'Approved'].shape[0]
+rejected_claims = filtered_data[filtered_data['Claim Status'] == 'Rejected'].shape[0]
+pending_claims = filtered_data[filtered_data['Claim Status'] == 'Pending'].shape[0]
 # Calculate total claim amount
-total_claim_amount = filtered_data['claim_amount'].sum()
+total_claim_amount = (filtered_data['Claim Amount'].sum())/scale
 
-# Format total claim amount (in millions if necessary)
-def format_claim_amount(amount):
-    if amount >= 1_000_000:
-        return f"RWF {amount / 1_000_000:.1f}M"  # Format in millions with 1 decimal point
-    return f"RWF {amount:,.2f}"  # Regular format for amounts below 1M
 
 if not filtered_data.empty:
     # Create a 4-column layout for the metrics
@@ -193,8 +197,12 @@ if not filtered_data.empty:
     display_metric(col2, "Unique Claims", unique_mem)
     display_metric(col3,"Percentage claimed", f"{percent_unique:,.1f}%")
     display_metric(col1, "Approved Claims", approved_claims)
-    display_metric(col2, "Total Claim Amount", format_claim_amount(total_claim_amount))  # Use formatted total claim amount
+    display_metric(col2, "Total Claim Amount", f"RWF {total_claim_amount:.1f} M")
+    display_metric(col3, "Approved Claim Amount", f"RWF {approved:.1f} M")
 
+  # Use formatted total claim amount
+
+    custom_colors = ["#006E7F", "#e66c37", "#461b09", "#f8a785", "#CC3636"]
 
     # Visualization for claims by status and top 10 specializations handling claims side by side
 
@@ -206,7 +214,7 @@ if not filtered_data.empty:
         st.markdown('<h2 class="custom-subheader"> Claims by Status</h2>', unsafe_allow_html=True)
         
         # Count the number of claims by status
-        claims_by_status = filtered_data['status'].value_counts().reset_index()
+        claims_by_status = filtered_data['Claim Status'].value_counts().reset_index()
         claims_by_status.columns = ['status', 'Count']  # Rename columns for clarity
 
         # Create a pie chart for claims by status
@@ -231,19 +239,19 @@ if not filtered_data.empty:
 
     # Top 10 Specializations Handling Claims - Vertical Bar chart
     with col2:
-        st.markdown('<h2 class="custom-subheader"> Top Specializations </h2>', unsafe_allow_html=True)
+        st.markdown('<h2 class="custom-subheader"> Top Employer Groups </h2>', unsafe_allow_html=True)
         
         # Get the top 10 specializations
-        top_specializations = filtered_data['attending_doctor_specialisation'].value_counts().head(10).reset_index()
-        top_specializations.columns = ['Specialization', 'Number of Claims']  # Rename columns for clarity
+        top_specializations = filtered_data['Employer Name'].value_counts().head(10).reset_index()
+        top_specializations.columns = ['employer', 'Number of Claims']  # Rename columns for clarity
 
         # Create a vertical bar chart for the top specializations
         fig_specializations = px.bar(
             top_specializations,
-            x='Specialization',
+            x='employer',
             y='Number of Claims',
             text='Number of Claims',
-            labels={'Specialization': 'Specializations', 'Number of Claims': 'Number of Claims'},
+            labels={'employer': 'Employer Group', 'Number of Claims': 'Number of Claims'},
             color_discrete_sequence=['#009DAE']  # Set the bar color
         )
         fig_specializations.update_traces(marker_color=teal_color)
@@ -267,40 +275,56 @@ if not filtered_data.empty:
 
         # Define the order of months
         month_order = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug']
-        filtered_data['Month'] = pd.Categorical(filtered_data['claim_date'].dt.strftime('%b'), categories=month_order, ordered=True)
+        filtered_data['Month'] = pd.Categorical(filtered_data['Month'], categories=month_order, ordered=True)
 
-        # Group data by Month and Status, counting the number of claims
-        grouped_data = filtered_data.groupby(['Month', 'status']).agg({'claim_id': 'count'}).reset_index()
+    # Group data by "Start Date Month" and "Client Segment" and sum the Total Lives
+    monthly_premium = filtered_data.groupby(['Month', 'Claim Status'])['Claim Amount'].sum().unstack().fillna(0)
 
-        # Get unique statuses
-        statuses = grouped_data['status'].unique()
 
-        # Initialize the figure
-        fig_m = go.Figure()
 
-        # Add bar traces for each Status
-        for idx, status in enumerate(statuses):
-            subset = grouped_data[grouped_data['status'] == status]
-            fig_m.add_trace(go.Bar(
-                x=subset['Month'],
-                y=subset['claim_id'],
-                name=status,
-                marker_color=colors[idx % len(colors)]  # Cycle through colors
+    # Create the layout columns
+    cls1, cls2 = st.columns(2)
+
+    with cls1:
+        fig_monthly_premium = go.Figure()
+
+        for idx, Client_Segment in enumerate(monthly_premium.columns):
+            fig_monthly_premium.add_trace(go.Bar(
+                x=monthly_premium.index,
+                y=monthly_premium[Client_Segment],
+                name=Client_Segment,
+                textposition='inside',
+                textfont=dict(color='white'),
+                hoverinfo='x+y+name',
+                marker_color=custom_colors[idx % len(custom_colors)]  # Cycle through custom colors
             ))
 
-        # Update layout to group bars by month and customize chart appearance
-        fig_m.update_layout(
-            yaxis=dict(title="Number of Claims"),
-            xaxis=dict(title="Month"),
-            barmode='group',  # Group bars together by month
-            height=350,
-            margin=dict(l=10, r=10, t=30, b=10),
-            legend_title_text='Status',
-            legend=dict(x=0.5, y=1.15, xanchor='center', orientation='h')  # Move legend above chart
+        # Add a line chart to show the trend of Total Premium over time
+        fig_monthly_premium.add_trace(go.Scatter(
+            x=monthly_premium.index,
+            y=monthly_premium.sum(axis=1),
+            mode='lines+markers',
+            name='Rate of change',
+            line=dict(color='red', width=2),
+            marker=dict(size=6, symbol='circle', color='red')
+        ))
+
+        # Set layout for the Total Premium chart
+        fig_monthly_premium.update_layout(
+            barmode='group',  # Grouped bar chart
+            xaxis_title="Month",
+            yaxis_title="Total Claim Amount",
+            font=dict(color='Black'),
+            xaxis=dict(title_font=dict(size=14), tickfont=dict(size=12)),
+            yaxis=dict(title_font=dict(size=14), tickfont=dict(size=12)),
+            margin=dict(l=0, r=0, t=30, b=50),
         )
 
-        # Display the chart
-        st.plotly_chart(fig_m, use_container_width=True)
+        # Display the Total Premium chart in Streamlit
+        st.markdown('<h2 class="custom-subheader">Total Claim Amount Monthly by Status</h2>', unsafe_allow_html=True)
+        st.plotly_chart(fig_monthly_premium, use_container_width=True)
+
+
         with st.expander("View Monthly Claims Data", expanded=False):
             st.dataframe(grouped_data.style.background_gradient(cmap='YlOrBr'))
         
