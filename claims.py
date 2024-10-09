@@ -224,7 +224,7 @@ if not filtered_data.empty:
             names='status', 
             values='Total Claim Amount', 
             hole=0.5,
-            color_discrete_sequence=px.colors.qualitative.Pastel
+            color_discrete_sequence=custom_colors
         )
         fig.update_layout(
             height=350, 
