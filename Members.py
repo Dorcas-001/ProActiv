@@ -335,7 +335,7 @@ if not filtered_data.empty:
         st.plotly_chart(fig_area, use_container_width=True)
 
     # Count the occurrences of each Status
-    coverage_counts = df["Employer"].value_counts().reset_index()
+    coverage_counts = filtered_data["Employer"].value_counts().reset_index()
     coverage_counts.columns = ["coverage", "Count"]
 
     with cols2:
@@ -356,7 +356,7 @@ if not filtered_data.empty:
         st.plotly_chart(fig, use_container_width=True)
     cls1, cls2 = st.columns(2)
 
-    age_counts = df["Plan"].value_counts().reset_index()
+    age_counts = filtered_data["Plan"].value_counts().reset_index()
     age_counts.columns = ["plan", "Count"]
 
     with cls1:
@@ -371,7 +371,7 @@ if not filtered_data.empty:
         # Display the chart in Streamlit
         st.plotly_chart(fig, use_container_width=True)
 # Count the occurrences of each Status
-    gender_counts = df["Status"].value_counts().reset_index()
+    gender_counts = filtered_data["Status"].value_counts().reset_index()
     gender_counts.columns = ["Status", "Count"]
 
     with cls2:
@@ -387,11 +387,11 @@ if not filtered_data.empty:
         st.plotly_chart(fig, use_container_width=True)
 
     # Create a new column for age groups in 5-year intervals
-    df['Age Group'] = (df['Age'] // 10) * 10
-    df['Age Group'] = df['Age Group'].astype(str) + '-' + (df['Age Group'] + 9).astype(str)
+    filtered_data['Age Group'] = (filtered_data['Age'] // 10) * 10
+    filtered_data['Age Group'] = filtered_data['Age Group'].astype(str) + '-' + (filtered_data['Age Group'] + 9).astype(str)
 
     # Count the occurrences in each age group
-    age_counts = df['Age Group'].value_counts().reset_index()
+    age_counts = filtered_data['Age Group'].value_counts().reset_index()
     age_counts.columns = ['Age Group', 'Count']
     age_counts.columns = ["Age", "Count"]
 
@@ -408,7 +408,7 @@ if not filtered_data.empty:
         st.plotly_chart(fig, use_container_width=True)
 
     # Group by month and educational background, then count the number of workers
-    monthly_workers = df.groupby(['Year', 'Plan']).size().unstack().fillna(0)
+    monthly_workers = filtered_data.groupby(['Year', 'Plan']).size().unstack().fillna(0)
 
     with cols2:
         fig_monthly_workers = go.Figure()
@@ -442,7 +442,7 @@ if not filtered_data.empty:
 
 
     # Group by month and educational background, then count the number of workers
-    monthly_workers = df.groupby(['Plan', 'Status']).size().unstack().fillna(0)
+    monthly_workers = filtered_data.groupby(['Plan', 'Status']).size().unstack().fillna(0)
 
     # Create the layout columns
     cls1, cls2 = st.columns(2)
@@ -477,7 +477,7 @@ if not filtered_data.empty:
         st.markdown('<h3 class="custom-subheader">Educational Background of Workers Onboarded Monthly</h3>', unsafe_allow_html=True)
         st.plotly_chart(fig_monthly_workers, use_container_width=True)
 
-    gender_counts = df["Employer"].value_counts().reset_index()
+    gender_counts = filtered_data["Employer"].value_counts().reset_index()
     gender_counts.columns = ["employer", "Count"]
 
     with cls2:
