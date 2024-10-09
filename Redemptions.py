@@ -186,7 +186,7 @@ if not filtered_data.empty:
     num_assessments = len(filtered_data)
     unique_mem = filtered_data["Member Number"].nunique()
     percent_unique = (unique_mem/active_mem) * 100
-    percet_pro = (2/pro_mem)*100
+    percet_pro = (3/pro_mem)*100
     # Display Metrics Side by Side
     col1, col2, col3 = st.columns(3)
     display_metric(col1,"Total Cost", f"RWF {total_cost:,.0f}")
