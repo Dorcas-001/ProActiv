@@ -203,8 +203,8 @@ month_order = {
 }
 
 # Year filter
-df['Year'] = filtered_data['Start Date'].dt.year
-df['Month'] = filtered_data['Start Date'].dt.strftime('%B')
+filtered_data['Year'] = filtered_data['Start Date'].dt.year
+filtered_data['Month'] = filtered_data['Start Date'].dt.strftime('%B')
 sorted_months = sorted(filtered_data['Month'].dropna().unique(), key=lambda x: month_order[x])
 # Sidebar filters
 
