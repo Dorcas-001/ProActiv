@@ -203,16 +203,16 @@ month_order = {
 }
 
 # Year filter
-df['Year'] = df['Start Date'].dt.year
-df['Month'] = df['Start Date'].dt.strftime('%B')
-sorted_months = sorted(df['Month'].dropna().unique(), key=lambda x: month_order[x])
+df['Year'] = filtered_data['Start Date'].dt.year
+df['Month'] = filtered_data['Start Date'].dt.strftime('%B')
+sorted_months = sorted(filtered_data['Month'].dropna().unique(), key=lambda x: month_order[x])
 # Sidebar filters
 
-year = st.sidebar.multiselect('Select Year', options=sorted(df['Year'].unique()))
+year = st.sidebar.multiselect('Select Year', options=sorted(filtered_data['Year'].unique()))
 month = st.sidebar.multiselect('Select Month', options=sorted_months)
-selected_plan = st.sidebar.multiselect('Select Plan', options=df['Plan'].unique())
-selected_status = st.sidebar.multiselect('Select Status', options=df['Status'].unique())
-selected_em = st.sidebar.multiselect('Select Employer Group', options=df['Employer'].unique())
+selected_plan = st.sidebar.multiselect('Select Plan', options=filtered_data['Plan'].unique())
+selected_status = st.sidebar.multiselect('Select Status', options=filtered_data['Status'].unique())
+selected_em = st.sidebar.multiselect('Select Employer Group', options=filtered_data['Employer'].unique())
 
 
 # Apply sidebar filters
