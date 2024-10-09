@@ -63,6 +63,8 @@ color_palette = ["#006E7F", "#e66c37","#461b09","#f8a785", "#CC3636",  '#FFC288'
 
 df = pd.read_excel("steps_data.xlsx")
 df = df.drop_duplicates()
+# Convert 'created_timestamp' column to datetime with correct format
+df['created_timestamp'] = pd.to_datetime(df['created_timestamp'], errors='coerce')
 
 # Sidebar styling and logo
 st.markdown("""
@@ -152,8 +154,20 @@ if not filtered_df.empty:
     unique_members = filtered_df['member_account_id'].nunique()
 
     total_steps_per_member = filtered_df.groupby('member_account_id')['steps'].sum().reset_index()
-    # Calculate the average total steps per member
-    average_total_steps_per_member = (total_steps_per_member['steps'].mean())/scale
+
+    # Group by 'created' and 'member_account' and sum the steps
+    grouped = df.groupby(['created_timestamp', 'member_account_id']).sum().reset_index()
+
+    # Group by 'created' to get total steps per day and count of unique members
+    daily_steps = grouped.groupby('created_timestamp').agg({'steps': 'sum', 'member_account_id': 'nunique'}).reset_index()
+
+    # Calculate average steps per member per day
+    daily_steps['average_steps'] = daily_steps['steps'] / daily_steps['member_account_id']
+    
+    # Calculate overall average steps per day
+    overall_average_steps = daily_steps['average_steps'].mean()
+
+
     # Count unique members
     percent_unique  =  (unique_members/active_mem) *100
     scaled_steps_2024 = total_steps_2024/scaling_factor
@@ -209,8 +223,8 @@ if not filtered_df.empty:
     display_metric(col2, "Total Step Count 2024", f"{scaled_steps_2024:.0f}M")
     display_metric(col3, "Total Unique Members", unique_members)
     display_metric(col1, "Total Distance Covered", f"{scaled_distance:.0f}M")
-    display_metric(col2, "Average steps per Member", f"{average_total_steps_per_member:.1f}K")
-    display_metric(col3, "Percentage of steps by members", f"{percent_unique:.1f}%")
+    display_metric(col2, "Average steps per Member", f"{overall_average_steps:.0f}")
+    display_metric(col3, "Percentage of Physically Active members", f"{percent_unique:.1f}%")
 
 
 

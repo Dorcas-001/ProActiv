@@ -57,25 +57,82 @@ st.markdown('''
     </style>
 ''', unsafe_allow_html=True)
 # Your Streamlit app content
-st.markdown('<h1 class = "main-title">MEMBER DISTRIBUTION View</h1>', unsafe_allow_html=True)
+st.markdown('<h1 class = "main-title">MEMBER DISTRIBUTION VIEW</h1>', unsafe_allow_html=True)
 
+df = pd.read_excel('proactiv_members.xlsx')
+# Ensure the 'Start Date' column is in datetime format if needed
+df["Start Date"] = pd.to_datetime(df["Start Date"], errors='coerce')
+
+
+# Get minimum and maximum dates for the date input
+startDate = df["Start Date"].min()
+endDate = df["Start Date"].max()
+
+# Define CSS for the styled date input boxes
+st.markdown("""
+    <style>
+    .date-input-box {
+        border-radius: 10px;
+        text-align: left;
+        margin: 5px;
+        font-size: 1.2em;
+        font-weight: bold;
+    }
+    .date-input-title {
+        font-size: 1.2em;
+        margin-bottom: 5px;
+    }
+    </style>
+    """, unsafe_allow_html=True)
+
+# Create 2-column layout for date inputs
+col1, col2 = st.columns(2)
+
+# Function to display date input in styled boxes
+def display_date_input(col, title, default_date, min_date, max_date):
+    col.markdown(f"""
+        <div class="date-input-box">
+            <div class="date-input-title">{title}</div>
+        </div>
+        """, unsafe_allow_html=True)
+    return col.date_input("", default_date, min_value=min_date, max_value=max_date)
+
+# Display date inputs
+with col1:
+    date1 = pd.to_datetime(display_date_input(col1, "Start Date", startDate, startDate, endDate))
+
+with col2:
+    date2 = pd.to_datetime(display_date_input(col2, "End Date", endDate, startDate, endDate))
+
+# Filter DataFrame based on the selected dates
+df = df[(df["Start Date"] >= date1) & (df["Start Date"] <= date2)].copy()
 
 # Define colors to match the image
 color_palette = ["#006E7F", "#e66c37","#461b09","#f8a785", "#CC3636",  '#FFC288', '#EFB08C', '#FAD3CF']
 # Loading the data
-@st.cache_data
-def load_data():
-    # Replace this with your actual data loading method
-    df = df= pd.read_csv('proactiv_members.csv')
-    df['Date of Birth'] = pd.to_datetime(df['Date of Birth'])
-    return df
-df = load_data()
-df['Age'] = 2024 - df['Date of Birth'].dt.year
 
-# Define age groups with a 5-year range
-bins = range(int(df['Age'].min()), int(df['Age'].max()) + 5, 5)
-labels = [f'{i}-{i+4}' for i in bins[:-1]]
-df['Age Group'] = pd.cut(df['Age'], bins=bins, labels=labels, right=False)
+# Replace this with your actual data loading method
+
+# Convert 'Date of Birth' to datetime
+df['Date of Birth'] = pd.to_datetime(df['Date of Birth'], errors='coerce')
+
+# Drop rows with invalid dates or future dates
+today = pd.to_datetime('today')
+df = df[df['Date of Birth'] <= today]
+
+# Calculate the age
+df['Age'] = today.year - df['Date of Birth'].dt.year
+
+# Create a boolean mask for birthdays that have not occurred yet this year
+not_yet_birthday = (today.month < df['Date of Birth'].dt.month) | (
+    (today.month == df['Date of Birth'].dt.month) & (today.day < df['Date of Birth'].dt.day)
+)
+
+# Subtract 1 from age where the birthday has not yet occurred this year
+df.loc[not_yet_birthday, 'Age'] -= 1
+
+# Ensure no negative ages
+df['Age'] = df['Age'].clip(lower=0)
 
 # Define CSS for styling
 st.markdown("""
@@ -137,28 +194,48 @@ age_range = st.slider("Select Age Range", min_age, max_age, (min_age, max_age))
 filtered_data = df[(df['Age'] >= age_range[0]) & (df['Age'] <= age_range[1])]
 
 # Sidebar filters
+st.sidebar.header('Filters')
+# Convert date columns to datetime format
+month_order = {
+    "January": 1, "February": 2, "March": 3, "April": 4, 
+    "May": 5, "June": 6, "July": 7, "August": 8, 
+    "September": 9, "October": 10, "November": 11, "December": 12
+}
+
+# Year filter
+df['Year'] = df['Start Date'].dt.year
+df['Month'] = df['Start Date'].dt.strftime('%B')
+sorted_months = sorted(df['Month'].dropna().unique(), key=lambda x: month_order[x])
+# Sidebar filters
+
+year = st.sidebar.multiselect('Select Year', options=sorted(df['Year'].unique()))
+month = st.sidebar.multiselect('Select Month', options=sorted_months)
 selected_plan = st.sidebar.multiselect('Select Plan', options=df['Plan'].unique())
 selected_status = st.sidebar.multiselect('Select Status', options=df['Status'].unique())
-selected_gender = st.sidebar.multiselect('Select Gender', options=df['Gender'].unique())
-selected_employer_group = st.sidebar.multiselect('Select Employer Group', options=df['Employer Group'].unique())
+selected_em = st.sidebar.multiselect('Select Employer Group', options=df['Employer'].unique())
+
 
 # Apply sidebar filters
+if year:
+    filtered_data = filtered_data[filtered_data['Year'].isin(year)]
+if month:
+    filtered_data = filtered_data[filtered_data['Month'].isin(month)]
 if selected_plan:
     filtered_data = filtered_data[filtered_data['Plan'].isin(selected_plan)]
 if selected_status:
     filtered_data = filtered_data[filtered_data['Status'].isin(selected_status)]
-if selected_gender:
-    filtered_data = filtered_data[filtered_data['Gender'].isin(selected_gender)]
-if selected_employer_group:
-    filtered_data = filtered_data[filtered_data['Employer Group'].isin(selected_employer_group)]
+if selected_em:
+    filtered_data = filtered_data[filtered_data['Employer'].isin(selected_em)]
+
 
 # Calculate metrics
 if not filtered_data.empty:
     total_members = len(filtered_data)
     active_members = len(filtered_data[filtered_data['Status'] == 'Active'])
-    
+    unique_members = filtered_data['Employer'].nunique()
+
     # Display metrics
-    col1, col2 = st.columns(2)
+    col1, col2, col3 = st.columns(3)
     def display_metric(col, title, value):
         col.markdown(f"""
             <div class="metric-box">
@@ -166,89 +243,251 @@ if not filtered_data.empty:
                 <div class="metric-value">{value}</div>
             </div>
         """, unsafe_allow_html=True)
-    
-    display_metric(col1, "Total Members", total_members)
-    display_metric(col2, "Active Members", active_members)
-    
-    # Age group counts
-    age_group_counts = filtered_data['Age Group'].value_counts().sort_index()
-    
+    display_metric(col1, "Total Clients", unique_members)
+    display_metric(col2, "Total Members", total_members)
+    display_metric(col3, "Active Members", active_members)
 
-    fig = px.bar(
-        age_group_counts,
-        y=age_group_counts.index,
-        x=age_group_counts.values,
-        color=age_group_counts.index,
-        labels={'x': 'Number of Members', 'y': 'Age Group'},
-        color_discrete_sequence=color_palette,
-        text=age_group_counts.values
-    )
-    fig.update_layout(height=350, margin=dict(l=10, r=10, t=30, b=10))
-    # Pie chart for statuses
-    df_status = df.groupby('Status').size().reset_index(name='Count')
-    fig_pie = px.pie(df_status, names='Status', values='Count', color_discrete_sequence=color_palette)
-    fig_pie.update_traces(textposition='inside', textinfo='percent')
-    fig_pie.update_layout(height=350, margin=dict(l=10, r=10, t=30, b=10))
+   
+    # Sidebar styling and logo
+    st.markdown("""
+        <style>
+        .sidebar .sidebar-content {
+            background-color: #f0f2f6;
+            padding: 20px;
+            border-radius: 10px;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+        }
+        .sidebar .sidebar-content h2 {
+            color: #007BFF; /* Change this color to your preferred title color */
+            font-size: 1.5em;
+            margin-bottom: 20px;
+            text-align: center;
+        }
+        .sidebar .sidebar-content .filter-title {
+            color: #e66c37;
+            font-size: 1.2em;
+            font-weight: bold;
+            margin-top: 20px;
+            margin-bottom: 10px;
+            text-align: center;
+        }
+        .sidebar .sidebar-content .filter-header {
+            color: #e66c37; /* Change this color to your preferred header color */
+            font-size: 2.5em;
+            font-weight: bold;
+            margin-top: 20px;
+            margin-bottom: 20px;
+            text-align: center;
+        }
+        .sidebar .sidebar-content .filter-multiselect {
+            margin-bottom: 15px;
+        }
+        .sidebar .sidebar-content .logo {
+            text-align: center;
+            margin-bottom: 20px;
+        }
+        .sidebar .sidebar-content .logo img {
+            max-width: 80%;
+            height: auto;
+            border-radius: 50%;
+        }
+                
+        </style>
+        """, unsafe_allow_html=True)
 
-    # Doughnut chart for plans
-    df_plan = df.groupby('Plan').size().reset_index(name='Count')
-    fig_doughnut = px.pie(df_plan, names='Plan', values='Count', color_discrete_sequence=color_palette, hole=0.4)
-    fig_doughnut.update_traces(textposition='inside', textinfo='value')
-    fig_doughnut.update_layout(height=350, margin=dict(l=10, r=10, t=30, b=10))
-    # Grouped bar chart by Plan and Status
-    df_plan_status = filtered_data.groupby(['Plan', 'Status']).size().reset_index(name='Number of Members')
-    plan_order=['Standard','Tier 3', 'Tier 4', 'Tier 5', 'Tier 6']
-    fig_grouped = go.Figure()
-    statuses = df_plan_status['Status'].unique()
-    for status in statuses:
-        subset = df_plan_status[df_plan_status['Status'] == status]
-        fig_grouped.add_trace(go.Bar(
-            x=subset['Plan'],
-            y=subset['Number of Members'],
-            name=status,
-            marker_color=color_palette[list(statuses).index(status) % len(color_palette)]  # Cycle through colors
+    custom_colors = ["#006E7F", "#e66c37", "#461b09", "#f8a785", "#CC3636"]
+
+    cols1, cols2 = st.columns(2)
+
+    # Group data by day and count visits
+    daily_visits = filtered_data.groupby(filtered_data['Start Date'].dt.to_period('D')).size()
+    daily_visits.index = daily_visits.index.to_timestamp()
+
+    # Create a DataFrame for the daily visits
+    daily_visits_df = daily_visits.reset_index()
+    daily_visits_df.columns = ['Day', 'Number of Workforce']
+
+    with cols1:
+        st.markdown('<h3 class="custom-subheader">Number of Onboarded Workforce Over </h3>', unsafe_allow_html=True)
+
+        # Create area chart for visits per day
+        fig_area = go.Figure()
+
+        fig_area.add_trace(go.Scatter(
+            x=daily_visits_df['Day'],
+            y=daily_visits_df['Number of Workforce'],
+            fill='tozeroy',
+            mode='lines',
+            marker=dict(color='#009DAE'),
+            line=dict(color='#009DAE'),
+            name='Number of Employees'
         ))
-    
-    fig_grouped.update_layout(
-        yaxis=dict(title="Number of Members"),
-        xaxis=dict(title="Plan",categoryorder='array',
-        categoryarray=plan_order),
-        barmode='group',  # Group bars together by plan
-        height=450,
-        margin=dict(l=10, r=10, t=30, b=10),
-        legend_title_text='Status',
-        legend=dict(x=0.5, y=1.15, xanchor='center', orientation='h')  # Move legend above chart
-    )
-    fig_grouped.update_layout(height=350, margin=dict(l=10, r=10, t=30, b=10))
 
+        fig_area.update_layout(
+            xaxis_title="Days of the Month",
+            yaxis_title="Number of Members",
+            font=dict(color='black'),
+            width=1200, 
+            height=460  
+        )
 
-        # Display the chart
-    col1,col2=st.columns(2)
-    with col1:
-        st.markdown('<h2 class="custom-subheader">Members Age Distribution</h2>', unsafe_allow_html=True)
+        # Display the plot
+        st.plotly_chart(fig_area, use_container_width=True)
+
+    # Count the occurrences of each Status
+    coverage_counts = df["Employer"].value_counts().reset_index()
+    coverage_counts.columns = ["coverage", "Count"]
+
+    with cols2:
+        # Display the header
+        st.markdown('<h3 class="custom-subheader">Number of Members by Employer Group</h3>', unsafe_allow_html=True)
+
+        # Create a bar chart
+        fig = px.bar(coverage_counts, x="coverage", y="Count", text="Count", template="plotly_white", color_discrete_sequence=custom_colors)
+        fig.update_traces(textposition='inside', textfont=dict(color='white'))
+        fig.update_layout(
+            xaxis_title="Employer Group",
+            yaxis_title="Number of Members",
+            height=450,
+            margin=dict(l=0, r=10, t=30, b=50)
+        )
+
+        # Display the chart in Streamlit
         st.plotly_chart(fig, use_container_width=True)
-        with st.expander("View Members Age Group Data", expanded=False):
-            age_group_counts = df['Age Group'].value_counts().sort_index().reset_index()
-            age_group_counts.columns = ['Age Group', 'Number of Members']
-            st.dataframe(age_group_counts.style.background_gradient(cmap='YlOrBr'))
-            # Apply background gradient to the DataFrame
-        st.markdown('<h2 class="custom-subheader">Member Status Distribution</h2>', unsafe_allow_html=True)
-        st.plotly_chart(fig_pie, use_container_width=True)
-        with st.expander("View Members Status Data", expanded=False):
-            df_status = df_status.rename(columns={'Count': 'Number of Members'})
-            st.dataframe(df_status.style.background_gradient(cmap='YlOrBr'))
-    with col2:
-        st.markdown('<h2 class="custom-subheader">Plan Distribution</h2>', unsafe_allow_html=True)
-        st.plotly_chart(fig_doughnut, use_container_width=True)
-        with st.expander("View Tier Plans Data", expanded=False):
-            df_plan = df_plan.rename(columns={'Count': 'Number of Members'})
-            st.dataframe(df_plan.style.background_gradient(cmap='YlOrBr'))
-        st.markdown('<h2 class="custom-subheader">Plan and Status Distribution</h2>', unsafe_allow_html=True)
-        st.plotly_chart(fig_grouped, use_container_width=True)
-        with st.expander("View Plan and Status Data", expanded=False):
-            st.dataframe(df_plan_status.style.background_gradient(cmap='YlOrBr'))
-    st.markdown('<h2 class="custom-subheader">Member Distribution Table</h2>', unsafe_allow_html=True)    
-    with st.expander("Summary Table", expanded=False):
-            st.dataframe(df.style.background_gradient(cmap="YlOrBr"))      
-else:
-    st.write("No data available for the selected filters.")
+    cls1, cls2 = st.columns(2)
+
+    age_counts = df["Plan"].value_counts().reset_index()
+    age_counts.columns = ["plan", "Count"]
+
+    with cls1:
+        # Display the header
+        st.markdown('<h3 class="custom-subheader">Plan Distribution of Members</h3>', unsafe_allow_html=True)
+
+        # Create a donut chart
+        fig = px.pie(age_counts, names="plan", values="Count", template="plotly_dark", color_discrete_sequence=custom_colors)
+        fig.update_traces(textposition='inside', textinfo='value+percent')
+        fig.update_layout(height=450, margin=dict(l=0, r=10, t=30, b=50))
+
+        # Display the chart in Streamlit
+        st.plotly_chart(fig, use_container_width=True)
+# Count the occurrences of each Status
+    gender_counts = df["Status"].value_counts().reset_index()
+    gender_counts.columns = ["Status", "Count"]
+
+    with cls2:
+        # Display the header
+        st.markdown('<h3 class="custom-subheader">Status Distribution of Members</h3>', unsafe_allow_html=True)
+
+        # Create a donut chart
+        fig = px.pie(gender_counts, names="Status", values="Count", hole=0.5, template="plotly_dark", color_discrete_sequence=custom_colors)
+        fig.update_traces(textposition='inside', textinfo='value+percent')
+        fig.update_layout(height=450, margin=dict(l=0, r=10, t=30, b=50))
+
+        # Display the chart in Streamlit
+        st.plotly_chart(fig, use_container_width=True)
+
+    # Create a new column for age groups in 5-year intervals
+    df['Age Group'] = (df['Age'] // 10) * 10
+    df['Age Group'] = df['Age Group'].astype(str) + '-' + (df['Age Group'] + 9).astype(str)
+
+    # Count the occurrences in each age group
+    age_counts = df['Age Group'].value_counts().reset_index()
+    age_counts.columns = ['Age Group', 'Count']
+    age_counts.columns = ["Age", "Count"]
+
+    with cols1:
+        # Display the header
+        st.markdown('<h3 class="custom-subheader">Age Distribution of Workforce</h3>', unsafe_allow_html=True)
+
+        # Create a donut chart
+        fig = px.pie(age_counts, names="Age", values="Count", template="plotly_dark", color_discrete_sequence=custom_colors)
+        fig.update_traces(textposition='inside', textinfo='value+percent')
+        fig.update_layout(height=450, margin=dict(l=0, r=10, t=30, b=50))
+
+        # Display the chart in Streamlit
+        st.plotly_chart(fig, use_container_width=True)
+
+    # Group by month and educational background, then count the number of workers
+    monthly_workers = df.groupby(['Year', 'Plan']).size().unstack().fillna(0)
+
+    with cols2:
+        fig_monthly_workers = go.Figure()
+
+
+        for idx, education in enumerate(monthly_workers.columns):
+            fig_monthly_workers.add_trace(go.Bar(
+                x=monthly_workers.index,
+                y=monthly_workers[education],
+                name=education,
+                textposition='inside',
+                textfont=dict(color='white'),
+                hoverinfo='x+y+name',
+                marker_color=custom_colors[idx % len(custom_colors)]  # Cycle through custom colors
+            ))
+
+        # Set layout for the Workers chart
+        fig_monthly_workers.update_layout(
+            barmode='group',  # Grouped bar chart
+            xaxis_title="Month",
+            yaxis_title="Number of Workers",
+            font=dict(color='Black'),
+            xaxis=dict(title_font=dict(size=14), tickfont=dict(size=12)),
+            yaxis=dict(title_font=dict(size=14), tickfont=dict(size=12)),
+            margin=dict(l=0, r=0, t=30, b=50),
+        )
+
+        # Display the Workers chart in Streamlit
+        st.markdown('<h3 class="custom-subheader"> Yearly Gender Distribution of Onboarded Workers</h3>', unsafe_allow_html=True)
+        st.plotly_chart(fig_monthly_workers, use_container_width=True)
+
+
+    # Group by month and educational background, then count the number of workers
+    monthly_workers = df.groupby(['Plan', 'Status']).size().unstack().fillna(0)
+
+    # Create the layout columns
+    cls1, cls2 = st.columns(2)
+
+    with cls1:
+        fig_monthly_workers = go.Figure()
+
+
+        for idx, education in enumerate(monthly_workers.columns):
+            fig_monthly_workers.add_trace(go.Bar(
+                x=monthly_workers.index,
+                y=monthly_workers[education],
+                name=education,
+                textposition='inside',
+                textfont=dict(color='white'),
+                hoverinfo='x+y+name',
+                marker_color=custom_colors[idx % len(custom_colors)]  # Cycle through custom colors
+            ))
+
+        # Set layout for the Workers chart
+        fig_monthly_workers.update_layout(
+            barmode='group',  # Grouped bar chart
+            xaxis_title="Month",
+            yaxis_title="Number of Workers",
+            font=dict(color='Black'),
+            xaxis=dict(title_font=dict(size=14), tickfont=dict(size=12)),
+            yaxis=dict(title_font=dict(size=14), tickfont=dict(size=12)),
+            margin=dict(l=0, r=0, t=30, b=50),
+        )
+
+        # Display the Workers chart in Streamlit
+        st.markdown('<h3 class="custom-subheader">Educational Background of Workers Onboarded Monthly</h3>', unsafe_allow_html=True)
+        st.plotly_chart(fig_monthly_workers, use_container_width=True)
+
+    gender_counts = df["Employer"].value_counts().reset_index()
+    gender_counts.columns = ["employer", "Count"]
+
+    with cls2:
+        # Display the header
+        st.markdown('<h3 class="custom-subheader">Age Distribution of Workforce</h3>', unsafe_allow_html=True)
+
+        # Create a donut chart
+        fig = px.pie(gender_counts, names="employer", values="Count", template="plotly_dark", color_discrete_sequence=custom_colors)
+        fig.update_traces(textposition='inside', textinfo='value+percent')
+        fig.update_layout(height=450, margin=dict(l=0, r=10, t=30, b=50))
+
+        # Display the chart in Streamlit
+        st.plotly_chart(fig, use_container_width=True)
