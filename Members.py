@@ -308,7 +308,7 @@ if not filtered_data.empty:
     daily_visits_df.columns = ['Day', 'Number of Workforce']
 
     with cols1:
-        st.markdown('<h3 class="custom-subheader">Number of Onboarded Workforce Over </h3>', unsafe_allow_html=True)
+        st.markdown('<h3 class="custom-subheader">Number of ProActiv Members Over Time</h3>', unsafe_allow_html=True)
 
         # Create area chart for visits per day
         fig_area = go.Figure()
@@ -397,7 +397,7 @@ if not filtered_data.empty:
 
     with cols1:
         # Display the header
-        st.markdown('<h3 class="custom-subheader">Age Distribution of Workforce</h3>', unsafe_allow_html=True)
+        st.markdown('<h3 class="custom-subheader">Age Distribution of Members</h3>', unsafe_allow_html=True)
 
         # Create a donut chart
         fig = px.pie(age_counts, names="Age", values="Count", template="plotly_dark", color_discrete_sequence=custom_colors)
@@ -428,8 +428,8 @@ if not filtered_data.empty:
         # Set layout for the Workers chart
         fig_monthly_workers.update_layout(
             barmode='group',  # Grouped bar chart
-            xaxis_title="Month",
-            yaxis_title="Number of Workers",
+            xaxis_title="Year",
+            yaxis_title="Number of Members",
             font=dict(color='Black'),
             xaxis=dict(title_font=dict(size=14), tickfont=dict(size=12)),
             yaxis=dict(title_font=dict(size=14), tickfont=dict(size=12)),
@@ -437,7 +437,7 @@ if not filtered_data.empty:
         )
 
         # Display the Workers chart in Streamlit
-        st.markdown('<h3 class="custom-subheader"> Yearly Gender Distribution of Onboarded Workers</h3>', unsafe_allow_html=True)
+        st.markdown('<h3 class="custom-subheader"> Yearly Gender Distribution of ProActiv Members</h3>', unsafe_allow_html=True)
         st.plotly_chart(fig_monthly_workers, use_container_width=True)
 
 
@@ -465,8 +465,8 @@ if not filtered_data.empty:
         # Set layout for the Workers chart
         fig_monthly_workers.update_layout(
             barmode='group',  # Grouped bar chart
-            xaxis_title="Month",
-            yaxis_title="Number of Workers",
+            xaxis_title="Plan",
+            yaxis_title="Number of Members",
             font=dict(color='Black'),
             xaxis=dict(title_font=dict(size=14), tickfont=dict(size=12)),
             yaxis=dict(title_font=dict(size=14), tickfont=dict(size=12)),
@@ -474,7 +474,7 @@ if not filtered_data.empty:
         )
 
         # Display the Workers chart in Streamlit
-        st.markdown('<h3 class="custom-subheader">Educational Background of Workers Onboarded Monthly</h3>', unsafe_allow_html=True)
+        st.markdown('<h3 class="custom-subheader">Plan vs Status Distribution</h3>', unsafe_allow_html=True)
         st.plotly_chart(fig_monthly_workers, use_container_width=True)
 
     gender_counts = filtered_data["Employer"].value_counts().reset_index()
@@ -482,7 +482,7 @@ if not filtered_data.empty:
 
     with cls2:
         # Display the header
-        st.markdown('<h3 class="custom-subheader">Age Distribution of Workforce</h3>', unsafe_allow_html=True)
+        st.markdown('<h3 class="custom-subheader">Total ProActiv Client Distribution</h3>', unsafe_allow_html=True)
 
         # Create a donut chart
         fig = px.pie(gender_counts, names="employer", values="Count", template="plotly_dark", color_discrete_sequence=custom_colors)
