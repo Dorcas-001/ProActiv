@@ -134,7 +134,7 @@ if em_group:
 if channel_name:
     df = df[df['Intermediary Name'].isin(channel_name)]
 
-
+df['Total_lives'] = df["Total lives"].astype(int)
 # Calculate total claims, approved claims, rejected claims, and pending claims
 scale = 1_000_000
 scaled = 1_000
