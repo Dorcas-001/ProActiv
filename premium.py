@@ -134,7 +134,6 @@ if em_group:
 if channel_name:
     df = df[df['Intermediary Name'].isin(channel_name)]
 
-df['Total_lives'] = df["Total lives"].astype(int)
 # Calculate total claims, approved claims, rejected claims, and pending claims
 scale = 1_000_000
 scaled = 1_000
@@ -199,7 +198,7 @@ if not df.empty:
     # Show total claims, approved claims, rejected claims, and pending claims
     display_metric(col1, "Total Premium", f"{total_premium:.0f} M")
     display_metric(col2, "Total Clients", unique_mem)
-    display_metric(col3,"Total Lives Covered",total_lives)
+    display_metric(col3,"Total Lives Covered",f"{total_lives:.0f}")
     display_metric(col4, "Average Premium", f"{av_premium:.0f} K")
     display_metric(col1, "Total Claims", f"{total_claims:.1f} M")
     display_metric(col2, "Total Redemptions", f"{total_redeems:.2f} M")
