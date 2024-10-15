@@ -62,7 +62,7 @@ st.markdown('<h1 class="main-title">PROACTIV PREMIUM VIEW</h1>', unsafe_allow_ht
 
 # Load the dataset (replace with your dataset)
 df = pd.read_excel('ProActiv Written Premium.xlsx')
-df1 = pd.read_csv('mental_health_claims.csv')
+df1 = pd.read_excel('ProActiv.xlsx')
 df2 = pd.read_csv('reward_redemptions.csv',encoding="ISO-8859-1")
 
 df_conc=pd.concat([df, df1, df2])
@@ -141,8 +141,8 @@ unique_mem = df["Client Name"].nunique()
 total_premium = (df["Premium"].sum())/scale
 total_lives=df["Total lives"].sum()
 av_premium=((df["Premium"].sum())/total_lives)/scaled
-total_claims = (df1["claim_amount"].sum())/scaled
-total_redeems=(df2["Item Cost"].sum())/scaled
+total_claims = (df_conc["Claim Amount"].sum())/scaled
+total_redeems=(df_conc["Item Cost"].sum())/scaled
 total_cost =  (total_claims+total_redeems)
 
 
