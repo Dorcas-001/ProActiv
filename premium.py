@@ -200,9 +200,9 @@ if not df.empty:
     display_metric(col2, "Total Clients", unique_mem)
     display_metric(col3,"Total Lives Covered",total_lives)
     display_metric(col4, "Average Premium", f"{av_premium:.0f} K")
-    display_metric(col1, "Total Claims", f"{total_claims:.2f} M")
+    display_metric(col1, "Total Claims", f"{total_claims:.1f} M")
     display_metric(col2, "Total Redemptions", f"{total_redeems:.2f} M")
-    display_metric(col3,"Total ProActiv Cost",f"{total_cost:.2f} M")
+    display_metric(col3,"Total ProActiv Cost",f"{total_cost:.1f} M")
 
 
 
