@@ -141,10 +141,9 @@ unique_mem = df["Client Name"].nunique()
 total_premium = (df["Premium"].sum())/scale
 total_lives=df["Total lives"].sum()
 av_premium=((df["Premium"].sum())/total_lives)/scaled
-total_claims = (df_conc["claim_amount"].sum())/scale
-total_red=(df_conc["Item Cost"].sum())/scale
+total_claims = (df_conc["claim_amount"].sum())/scaled
 total_redeems=(df_conc["Item Cost"].sum())/scaled
-total_cost =  (total_claims+total_red)
+total_cost =  (total_claims+total_redeems)
 
 
 
@@ -203,7 +202,7 @@ if not df.empty:
     display_metric(col4, "Average Premium", f"{av_premium:.0f} K")
     display_metric(col1, "Total Claims", f"{total_claims:.0f} M")
     display_metric(col2, "Total Redemptions", f"{total_redeems:.0f} K")
-    display_metric(col3,"Total ProActiv Cost",f"{total_cost:.0f} M")
+    display_metric(col3,"Total ProActiv Cost",f"{total_cost:.0f} K")
 
 
 
