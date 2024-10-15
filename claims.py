@@ -111,8 +111,8 @@ filtered_data = data[(data["claim_date"] >= date1) & (data["claim_date"] <= date
 # Sidebar styling and filters
 st.sidebar.header("Filters")
 
-year = st.sidebar.multiselect("Select Year", options=sorted(filtered_data['Year'].unique()))
-month = st.sidebar.multiselect("Select Month", options=sorted(filtered_data['Month'].unique()))
+year = st.sidebar.multiselect("Select Year", options=sorted(filtered_data['Start Year'].unique()))
+month = st.sidebar.multiselect("Select Month", options=sorted(filtered_data['Start Month'].unique()))
 status = st.sidebar.multiselect("Select Claim Status", options=filtered_data['Claim Status'].unique())
 em_group = st.sidebar.multiselect("Select Employer Group", options=filtered_data['Employer Name'].unique())
 provider = st.sidebar.multiselect("Select Service Provider", options=filtered_data['Provider Name'].unique())
@@ -120,9 +120,9 @@ provider = st.sidebar.multiselect("Select Service Provider", options=filtered_da
 
 # Filter data based on user selections
 if year:
-    filtered_data = filtered_data[filtered_data['Year'].isin(year)]
+    filtered_data = filtered_data[filtered_data['Start Year'].isin(year)]
 if month:
-    filtered_data = filtered_data[filtered_data['Month'].isin(month)]
+    filtered_data = filtered_data[filtered_data['Start Month'].isin(month)]
 if status:
     filtered_data = filtered_data[filtered_data['status'].isin(status)]
 if em_group:
@@ -365,12 +365,12 @@ if not filtered_data.empty:
         st.markdown('<h3 class="custom-subheader">Monthly Distribution of Claim Amount</h3>', unsafe_allow_html=True)
         
         # Group by year and sum the claim amount
-        yearly_claim_amount = filtered_data.groupby('Month')['Claim Amount'].sum().reset_index()
+        yearly_claim_amount = filtered_data.groupby('Start Month')['Claim Amount'].sum().reset_index()
         
         fig_yearly_claims = go.Figure()
 
         fig_yearly_claims.add_trace(go.Bar(
-            x=yearly_claim_amount['Month'],
+            x=yearly_claim_amount['Start Month'],
             y=yearly_claim_amount['Claim Amount'],
             name='Total Claim Amount',
             text=yearly_claim_amount['Claim Amount'],

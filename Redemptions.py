@@ -63,7 +63,7 @@ color_palette = ["#006E7F", "#e66c37","#461b09","#f8a785", "#CC3636",  '#FFC288'
 def load_data():
    data = pd.read_csv('reward_redemptions.csv',encoding="ISO-8859-1")
    data['Redeemed On'] = pd.to_datetime(data['Redeemed On'])
-   data['Year'] = data['Redeemed On'].dt.year
+   data['Start Year'] = data['Redeemed On'].dt.year
    return data
 data = load_data()
 
@@ -109,14 +109,14 @@ df = data[(data["Redeemed On"] >= date1) & (data["Redeemed On"] <= date2)].copy(
 # Sidebar Filters
 st.sidebar.header('Filters')
 
-selected_year = st.sidebar.multiselect('Select Year', options=sorted(data['Year'].unique()))
+selected_year = st.sidebar.multiselect('Select Year', options=sorted(data['Start Year'].unique()))
 selected_merchants = st.sidebar.multiselect('Select Merchant Partner', options=data['Merchant Partner'].unique())
 selected_items = st.sidebar.multiselect('Select Item', options=data['Item Redeemed'].unique())
 selected_schemes = st.sidebar.multiselect('Select Scheme',options=data['Scheme Name'].unique())
 
 filtered_data = data
 if selected_year:
-    filtered_data = filtered_data[filtered_data['Year'].isin(selected_year)]
+    filtered_data = filtered_data[filtered_data['Start Year'].isin(selected_year)]
 if selected_merchants:
     filtered_data = filtered_data[filtered_data['Merchant Partner'].isin(selected_merchants)]
 if selected_items:
@@ -268,15 +268,15 @@ if not filtered_data.empty:
 
     # Analyze Hours and Months
     data['Hour'] = data['Redeemed On'].dt.hour
-    data['Month'] = data['Redeemed On'].dt.strftime('%b')
-    df_month = data.groupby('Month')['Item Cost'].sum().reset_index(name='Sum Item Cost')
+    data['Start Month'] = data['Redeemed On'].dt.strftime('%b')
+    df_month = data.groupby('Start Month')['Item Cost'].sum().reset_index(name='Sum Item Cost')
     df_hour = data.groupby('Hour').size().reset_index(name='Count')
     month_order = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec']
-    data['Month'] = pd.Categorical(data['Month'], categories=month_order, ordered=True)
+    data['Start Month'] = pd.Categorical(data['Start Month'], categories=month_order, ordered=True)
 
 
     hour_counts = data.groupby('Hour').size().reset_index(name='Count')
-    month_counts = data.groupby('Month').size().reset_index(name='Count')
+    month_counts = data.groupby('Start Month').size().reset_index(name='Count')
 
     fig_hours = px.bar(hour_counts, y='Hour', x='Count', orientation='h')
     fig_hours.update_layout(
@@ -303,10 +303,10 @@ if not filtered_data.empty:
 
     # Define the order of months
     month_order = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec']
-    data['Month'] = pd.Categorical(data['Month'], categories=month_order, ordered=True)
+    data[' Start Month'] = pd.Categorical(data['Start Month'], categories=month_order, ordered=True)
 
     # Group data by Month and Merchant Partner, summing up the Item Cost
-    grouped_data = data.groupby(['Month', 'Merchant Partner']).agg({'Item Cost': 'sum'}).reset_index()
+    grouped_data = data.groupby(['Start Month', 'Merchant Partner']).agg({'Item Cost': 'sum'}).reset_index()
 
     # Get unique Merchant Partners
     merchant_partners = grouped_data['Merchant Partner'].unique()
@@ -318,7 +318,7 @@ if not filtered_data.empty:
     for idx, partner in enumerate(merchant_partners):
         subset = grouped_data[grouped_data['Merchant Partner'] == partner]
         fig_m.add_trace(go.Bar(
-            x=subset['Month'],
+            x=subset['Start Month'],
             y=subset['Item Cost'],
             name=partner,
             marker_color=colors[idx % len(colors)]  # Cycle through colors
@@ -377,7 +377,7 @@ if not filtered_data.empty:
                 data=filtered_data,
                 values="Item Cost",
                 index=["Item Redeemed"],
-                columns="Month"
+                columns="Start Month"
             )
             st.write(sub_specialisation_Year.style.background_gradient(cmap="YlOrBr"))   
 

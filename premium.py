@@ -65,8 +65,9 @@ df = pd.read_excel('ProActiv Written Premium.xlsx')
 df1 = pd.read_excel('ProActiv.xlsx')
 df2 = pd.read_csv('reward_redemptions.csv',encoding="ISO-8859-1")
 
-df_conc=pd.concat([df, df1, df2])
 
+
+df=pd.concat([df, df1, df2])
 # Convert the date column to datetime if necessary
 df["Start Date"] = pd.to_datetime(df["Start Date"])
 
@@ -141,8 +142,8 @@ unique_mem = df["Client Name"].nunique()
 total_premium = (df["Premium"].sum())/scale
 total_lives=df["Total lives"].sum()
 av_premium=((df["Premium"].sum())/total_lives)/scaled
-total_claims = (df_conc["Claim Amount"].sum())/scale
-total_redeems=(df_conc["Item Cost"].sum())/scale
+total_claims = (df["Claim Amount"].sum())/scale
+total_redeems=(df["Item Cost"].sum())/scale
 total_cost =  (total_claims+total_redeems)
 
 
