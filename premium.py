@@ -144,7 +144,7 @@ av_premium=((df["Premium"].sum())/total_lives)/scaled
 total_claims = (df_conc["claim_amount"].sum())/scale
 total_red=(df_conc["Item Cost"].sum())/scale
 total_redeems=(df_conc["Item Cost"].sum())/scaled
-total_cost =  (total_premium+total_claims+total_red)
+total_cost =  (total_claims+total_red)
 
 
 
