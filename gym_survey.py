@@ -56,7 +56,7 @@ st.markdown('''
     </style>
 ''', unsafe_allow_html=True)
 # Your Streamlit app content
-st.markdown('<h2 class = "main-title">WORKFORCE HEALTH AND INSURANCE BEHAVIOUR VIEW</h2>', unsafe_allow_html=True)
+st.markdown('<h2 class = "main-title">GYM SURVEY RESPONSE VIEW</h2>', unsafe_allow_html=True)
 
 
 # Define colors to match the image
