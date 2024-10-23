@@ -18,7 +18,7 @@ st.set_page_config(
 logo_url = 'EC_logo.png'  
 st.sidebar.image(logo_url, use_column_width=True)
 
-page = st.sidebar.selectbox("Choose a dashboard", ["Home","ProActiv Premium", "Mental Health Assessments", "Reward Redemptions", "Gym Benefits", "Mental Health Claims", "Screenings", 'Member Distribution', 'Step Counts'])
+page = st.sidebar.selectbox("Choose a dashboard", ["Home","ProActiv Premium", "Mental Health Assessments", "Reward Redemptions", "Gym Benefits","Gym Survey", "Mental Health Claims", "Screenings", 'Member Distribution', 'Step Counts'])
 
 st.markdown(
     """
@@ -105,6 +105,8 @@ elif page == "Reward Redemptions":
     exec(open("Redemptions.py").read())
 elif page == "Gym Benefits":
     exec(open("gym.py").read())
+elif page == "Gym Survey":
+    exec(open("gym_survey.py").read())
 elif page == "Member Distribution":
     exec(open("Members.py").read())
 elif page == "Step Counts":
