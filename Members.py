@@ -56,6 +56,8 @@ st.markdown('''
         }
     </style>
 ''', unsafe_allow_html=True)
+
+
 # Your Streamlit app content
 st.markdown('<h1 class = "main-title">MEMBER DISTRIBUTION VIEW</h1>', unsafe_allow_html=True)
 

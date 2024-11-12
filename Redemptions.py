@@ -286,7 +286,7 @@ if not filtered_data.empty:
                 )
     fig_hours.update_traces(marker_color=teal_color)
     fig_hours.update_layout(height=350, margin=dict(l=10, r=10, t=30, b=10))
-    fig_months = px.bar(month_counts, x='Month', y='Count')
+    fig_months = px.bar(month_counts, x='Start Month', y='Count')
     fig_months.update_layout(
                     xaxis_title="Month",
                     yaxis_title="Number of Redemptions",
